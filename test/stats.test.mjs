@@ -21,6 +21,14 @@ test('elo: equal ratings gives 24, zero-sum', () => {
   assert.equal(total, 4 * START_RATING);
 });
 
+test('special games are worth 50% more', () => {
+  assert.equal(eloDelta(1000, 1000, 'tafel'), 36);
+  assert.equal(eloDelta(1000, 1000, 'koffie'), 36);
+  const s = compute(players, [m(1, 2, 1, 2, 'tafel')]);
+  assert.equal(s.byId[1].rating, 1036);
+  assert.equal(s.byId[2].rating, 964);
+});
+
 test('underdog wins more than favourite', () => {
   assert.ok(eloDelta(900, 1100) > eloDelta(1100, 900));
 });

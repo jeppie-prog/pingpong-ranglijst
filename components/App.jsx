@@ -361,7 +361,7 @@ function Enter({ data, stats, setData }) {
         body: JSON.stringify({ winnerId: winner, loserId: loser, special, declarerId: special === 'koffie' ? declarer : null }),
       });
       setData({ players: res.players, matches: res.matches });
-      setSaved({ id: res.newId, winner, loser, special, declarer, delta: eloDelta(wR, lR), wR, lR, at: Date.now() });
+      setSaved({ id: res.newId, winner, loser, special, declarer, delta: eloDelta(wR, lR, special), wR, lR, at: Date.now() });
     } catch (e) {
       setError(e.message);
     } finally {
@@ -427,14 +427,14 @@ function Enter({ data, stats, setData }) {
               <span className="em">🐢</span>
               <span>
                 <div className="t">Under the table</div>
-                <div className="d">Won 15-0, {name(loser)} has to crawl under the table</div>
+                <div className="d">Won 15-0, {name(loser)} has to crawl under the table · 50% extra points</div>
               </span>
             </button>
             <button className={`opt ${special === 'koffie' ? 'on' : ''}`} onClick={() => setSpecial('koffie')}>
               <span className="em">☕</span>
               <span>
                 <div className="t">Coffee slave challenge</div>
-                <div className="d">Someone was 0-2 down in sets and called that they would still win</div>
+                <div className="d">Someone was 0-2 down in sets and called that they would still win · 50% extra points</div>
               </span>
             </button>
           </div>

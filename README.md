@@ -6,7 +6,7 @@ The office table tennis rankings. After every game you enter who won, and the si
 
 - **Add a result** in a few taps: pick yourself, your opponent and who won. Your name is remembered.
 - **House rules**: 🐢 *Under the table* (won 15-0, the loser crawls under the table) and ☕ *Coffee slave challenge* (someone 0-2 down in sets calls that they will still win). The loser of a coffee slave challenge is always the coffee slave on the next working day.
-- **Rankings** based on Elo (everyone starts at 1000, K = 48), with the last 5 games and win or loss streaks.
+- **Rankings** based on Elo (everyone starts at 1000, K = 48), with the last 5 games and win or loss streaks. Under the table and coffee slave games are worth 50% more points.
 - **Player profile** with a rating chart, arch rival, nemesis, biggest upset and head-to-head against everyone.
 - **Head-to-head** between two players, including the chance of winning the next game.
 - **Undo** your own result within 15 minutes.
