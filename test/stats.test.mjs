@@ -12,11 +12,11 @@ const m = (id, day, w, l, special = '', declarerId = null) => ({
   id: String(id), playedAt: `2026-11-${String(day).padStart(2, '0')}T12:00:00.000Z`, winnerId: w, loserId: l, special, declarerId,
 });
 
-test('elo: equal ratings gives 16, zero-sum', () => {
-  assert.equal(eloDelta(1000, 1000), 16);
+test('elo: equal ratings gives 24, zero-sum', () => {
+  assert.equal(eloDelta(1000, 1000), 24);
   const s = compute(players, [m(1, 2, 1, 2)]);
-  assert.equal(s.byId[1].rating, 1016);
-  assert.equal(s.byId[2].rating, 984);
+  assert.equal(s.byId[1].rating, 1024);
+  assert.equal(s.byId[2].rating, 976);
   const total = Object.values(s.byId).reduce((a, p) => a + p.rating, 0);
   assert.equal(total, 4 * START_RATING);
 });
