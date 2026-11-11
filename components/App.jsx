@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { coffeeSlaves, compute, eloDelta, headToHead, START_RATING } from '@/lib/stats';
+import { coffeeSlaves, compute, eloDelta, headToHead, rankMovement, START_RATING } from '@/lib/stats';
 
 // ---------- helpers ----------------------------------------------------------
 
@@ -101,7 +101,7 @@ export default function App() {
   } else if (route.view === 'h2h') {
     body = <HeadToHead stats={stats} a={route.a} b={route.b} />;
   } else {
-    body = <Home stats={stats} />;
+    body = <Home stats={stats} data={data} />;
   }
 
   return (
@@ -217,8 +217,20 @@ function CoffeeBanner({ stats }) {
   );
 }
 
-function Home({ stats }) {
+function Move({ move }) {
+  if (move === 'new') return <span className="move new" title="New in the rankings today">NEW</span>;
+  if (move > 0) return <span className="move up" title={`Up ${move} today`}>▲{move}</span>;
+  if (move < 0) return <span className="move down" title={`Down ${-move} today`}>▼{-move}</span>;
+  return null;
+}
+
+function Home({ stats, data }) {
   const { ranked, unranked, highlights } = stats;
+  const moves = useMemo(() => {
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
+    return rankMovement(data.players, data.matches, stats, startOfToday);
+  }, [data, stats]);
   const upset = highlights.biggestUpset;
   return (
     <>
@@ -237,7 +249,7 @@ function Home({ stats }) {
               <li key={p.id} className="rank-item" onClick={() => go(`/player/${p.id}`)}>
                 <span className={`pos ${p.rank <= 3 ? `p${p.rank}` : ''}`}>{p.rank}</span>
                 <div>
-                  <div className="pname">{p.name} <Streak streak={p.streak} /></div>
+                  <div className="pname">{p.name} <Streak streak={p.streak} /> <Move move={moves[p.id]} /></div>
                   <div className="pmeta">
                     <span>{p.wins}W · {p.losses}L</span>
                     <Form form={p.form} />

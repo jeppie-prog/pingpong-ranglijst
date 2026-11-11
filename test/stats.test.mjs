@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { compute, eloDelta, coffeeSlaves, nextWorkday, headToHead, START_RATING } from '../lib/stats.js';
+import { compute, eloDelta, coffeeSlaves, nextWorkday, headToHead, rankMovement, START_RATING } from '../lib/stats.js';
 
 const players = [
   { id: 1, name: 'Jep', active: true },
@@ -64,4 +64,15 @@ test('coffee slave is due the next working day', () => {
   assert.equal(coffeeSlaves(s, new Date(2026, 10, 9, 9)).todaySlaves.length, 1);
   assert.equal(coffeeSlaves(s, new Date(2026, 10, 10, 9)).todaySlaves.length, 0);
   assert.equal(coffeeSlaves(s, new Date(2026, 10, 6, 16)).upcoming.length, 1);
+});
+
+test('rank movement since a moment', () => {
+  const matches = [m(1, 2, 1, 2), m(2, 3, 1, 3), m(3, 10, 2, 1), m(4, 10, 2, 1)];
+  const now = compute(players, matches);
+  const moves = rankMovement(players, matches, now, new Date('2026-11-10T00:00:00Z'));
+  assert.ok(moves[2] > 0);
+  assert.ok(moves[1] < 0);
+  assert.deepEqual(rankMovement(players, matches.slice(0, 2), compute(players, matches.slice(0, 2)), new Date('2026-11-10T00:00:00Z')), {});
+  const fresh = rankMovement(players, [m(1, 2, 1, 2), m(2, 10, 3, 1)], compute(players, [m(1, 2, 1, 2), m(2, 10, 3, 1)]), new Date('2026-11-10T00:00:00Z'));
+  assert.equal(fresh[3], 'new');
 });

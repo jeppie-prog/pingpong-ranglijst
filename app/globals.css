@@ -1,38 +1,50 @@
 :root {
-  --bg: #f3f5f2;
+  /* Company colours: navy #133B5C, grey #7B868C, orange #D46A27, white */
+  --bg: #f4f6f8;
   --card: #ffffff;
-  --text: #17201b;
-  --muted: #64706a;
-  --line: #e1e6e2;
-  --brand: #0f7a4a;
+  --text: #0f2233;
+  --muted: #5e686d; /* darker shade of #7B868C so small text stays readable */
+  --line: #dde3e8;
+  --header: #133b5c;
+  --header-ink: #ffffff;
+  --brand: #133b5c;
   --brand-ink: #ffffff;
-  --brand-soft: #e3f3ea;
+  --brand-soft: #e5edf4;
+  --accent: #d46a27;
+  --accent-ink: #ffffff;
+  --accent-text: #b5541a;
   --win: #16a34a;
   --loss: #dc2626;
   --gold: #d4a017;
-  --silver: #9aa3ab;
+  --silver: #7b868c;
   --bronze: #b4713a;
-  --coffee: #7a4a24;
-  --coffee-soft: #f6ece2;
-  --shadow: 0 1px 2px rgba(16, 24, 20, 0.06), 0 2px 8px rgba(16, 24, 20, 0.05);
+  --coffee: #b5541a;
+  --coffee-soft: #fbede4;
+  --shadow: 0 1px 2px rgba(15, 34, 51, 0.06), 0 2px 8px rgba(15, 34, 51, 0.05);
   --radius: 14px;
   color-scheme: light;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #0f1412;
-    --card: #182019;
-    --text: #e8eee9;
-    --muted: #93a19a;
-    --line: #2a352f;
-    --brand: #2bb673;
-    --brand-ink: #06140d;
-    --brand-soft: #1b3326;
+    --bg: #0b1621;
+    --card: #122231;
+    --text: #e8edf1;
+    --muted: #9ea9af;
+    --line: #22364a;
+    --header: #133b5c;
+    --header-ink: #ffffff;
+    --brand: #d46a27;
+    --brand-ink: #ffffff;
+    --brand-soft: #3a2414;
+    --accent: #d46a27;
+    --accent-ink: #ffffff;
+    --accent-text: #f0995a;
     --win: #34d17a;
     --loss: #f26b6b;
-    --coffee: #e0b48a;
-    --coffee-soft: #2c231b;
+    --silver: #9ea9af;
+    --coffee: #f0a36b;
+    --coffee-soft: #2e1f15;
     --shadow: none;
     color-scheme: dark;
   }
@@ -57,8 +69,9 @@ a { color: var(--brand); }
 
 /* Header */
 .topbar {
-  background: var(--brand);
-  color: var(--brand-ink);
+  background: var(--header);
+  color: var(--header-ink);
+  border-bottom: 3px solid var(--accent);
   padding: calc(14px + env(safe-area-inset-top)) 16px 14px;
 }
 .topbar-inner { max-width: 760px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
@@ -79,9 +92,9 @@ a { color: var(--brand); }
   font-size: 0.78rem; color: var(--muted);
 }
 .tabbar button .ic { font-size: 1.35rem; line-height: 1; }
-.tabbar button.on { color: var(--brand); font-weight: 600; }
+.tabbar button.on { color: var(--accent-text); font-weight: 600; }
 .tabbar .plus .ic {
-  background: var(--brand); color: var(--brand-ink); width: 44px; height: 44px; border-radius: 50%;
+  background: var(--accent); color: var(--accent-ink); width: 44px; height: 44px; border-radius: 50%;
   display: grid; place-items: center; margin-top: -22px; box-shadow: var(--shadow); font-size: 1.6rem;
 }
 
@@ -232,3 +245,9 @@ textarea { width: 100%; min-height: 120px; padding: 10px; border-radius: 12px; b
   .stat .v { font-size: 1.05rem; }
   .hl-grid { grid-template-columns: 1fr; }
 }
+
+/* Rank movement since the start of today */
+.move { font-size: 0.75rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+.move.up { color: var(--win); }
+.move.down { color: var(--loss); }
+.move.new { color: var(--accent-text); font-size: 0.7rem; letter-spacing: 0.04em; }
