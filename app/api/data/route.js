@@ -7,6 +7,6 @@ export async function GET() {
     return Response.json(await getAll(), { headers: { 'Cache-Control': 'no-store' } });
   } catch (e) {
     console.error(e);
-    return jsonError('Kon de gegevens niet laden.', 500);
+    return jsonError('Could not load the data.', 500);
   }
 }

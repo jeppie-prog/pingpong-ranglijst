@@ -1,8 +1,8 @@
 import './globals.css';
 
 export const metadata = {
-  title: 'Pingpong Ranglijst',
-  description: 'De tafeltennis-ranglijst van kantoor',
+  title: 'Ping Pong Ladder',
+  description: 'The office table tennis rankings',
   icons: { icon: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏓</text></svg>" },
 };
 
@@ -15,7 +15,7 @@ export const viewport = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="nl">
+    <html lang="en">
       <body>{children}</body>
     </html>
   );

@@ -1,46 +1,48 @@
-# 🏓 Pingpong Ranglijst
+# 🏓 Ping Pong Ladder
 
-De tafeltennis-ranglijst van kantoor. Na elk potje vul je in wie er won, en de site houdt de Elo-ranglijst, statistieken en head-to-heads bij.
+The office table tennis rankings. After every game you enter who won, and the site keeps track of the Elo rankings, stats and head-to-heads.
 
-## Wat zit erin
+## Features
 
-- **Uitslag invullen** in een paar tikken: kies jezelf, je tegenstander en wie er won. Je naam wordt onthouden.
-- **Huisregels**: 🐢 *Onder de tafel door* (gewonnen met 15-0) en ☕ *Koffieslaaf-uitdaging* (wie 0-2 achterstond en riep dat hij nog ging winnen). De verliezer van een koffieslaaf-uitdaging is altijd de koffieslaaf op de volgende werkdag.
-- **Ranglijst** op basis van Elo (iedereen begint op 1000, K = 32), met de laatste 5 potjes en winst- of verliesreeksen.
-- **Spelersprofiel** met een grafiek van de rating, de aartsrivaal, de nemesis, de grootste stunt en de head-to-head tegen iedereen.
-- **Head-to-head** tussen twee spelers, inclusief de winkans voor het volgende potje.
-- **Ongedaan maken** van je eigen uitslag binnen 15 minuten.
-- **Beheer** (`/beheer`, met beheerderscode): spelers toevoegen, hernoemen of inactief maken, en uitslagen verwijderen.
+- **Add a result** in a few taps: pick yourself, your opponent and who won. Your name is remembered.
+- **House rules**: 🐢 *Under the table* (won 15-0, the loser crawls under the table) and ☕ *Coffee slave challenge* (someone 0-2 down in sets calls that they will still win). The loser of a coffee slave challenge is always the coffee slave on the next working day.
+- **Rankings** based on Elo (everyone starts at 1000, K = 32), with the last 5 games and win or loss streaks.
+- **Player profile** with a rating chart, arch rival, nemesis, biggest upset and head-to-head against everyone.
+- **Head-to-head** between two players, including the chance of winning the next game.
+- **Undo** your own result within 15 minutes.
+- **Admin** (`/admin`, with an admin code): add, rename or deactivate players, and delete results.
 
-Ratings worden niet opgeslagen, maar steeds opnieuw uit alle uitslagen berekend. Een uitslag verwijderen of corrigeren werkt dus meteen door in alle ratings. Een jaarlijkse reset (bv. per 1 september) wordt daardoor later eenvoudig.
+Ratings are not stored. They are recalculated from all results every time, so deleting or fixing a result updates every rating immediately. This also makes a yearly reset (e.g. on 1 September) easy to add later.
 
-## Techniek
+## Tech
 
-- [Next.js](https://nextjs.org) (App Router), gewone JavaScript
-- PostgreSQL (bijvoorbeeld [Neon](https://neon.tech) via Vercel). Tabellen worden bij de eerste aanvraag automatisch aangemaakt.
-- Hosting op [Vercel](https://vercel.com)
+- [Next.js](https://nextjs.org) (App Router), plain JavaScript
+- PostgreSQL (e.g. [Neon](https://neon.tech) via Vercel). Tables are created automatically on the first request.
+- Hosted on [Vercel](https://vercel.com)
 
-### Omgevingsvariabelen
+### Environment variables
 
-| Naam | Uitleg |
+| Name | Description |
 | --- | --- |
-| `DATABASE_URL` | Postgres-verbinding (wordt automatisch gezet als je Neon via Vercel koppelt; `POSTGRES_URL` werkt ook) |
-| `ADMIN_CODE` | Geheime code voor de beheerpagina `/beheer` |
+| `DATABASE_URL` | Postgres connection string (set automatically when you connect Neon through Vercel; `POSTGRES_URL` also works) |
+| `ADMIN_CODE` | Secret code for the admin page `/admin` |
 
-### Lokaal draaien
+### Running locally
 
 ```bash
 npm install
-cp .env.example .env.local   # vul DATABASE_URL en ADMIN_CODE in
+cp .env.example .env.local   # fill in DATABASE_URL and ADMIN_CODE
 npm run dev
-npm test                     # rekentests voor Elo en statistieken
+npm test                     # Elo and stats tests
 ```
 
-## Online zetten op Vercel
+## Deploying on Vercel
 
-1. Log in op [vercel.com](https://vercel.com) met je GitHub-account.
-2. Klik op **Add New → Project** en importeer `pingpong-ranglijst`.
-3. Voeg bij **Environment Variables** `ADMIN_CODE` toe, met een zelfgekozen geheime code, en klik op **Deploy**.
-4. Ga in het project naar **Storage → Create Database → Neon (Postgres)** en koppel die aan het project. `DATABASE_URL` wordt dan automatisch ingesteld.
-5. Ga naar **Deployments** en kies **Redeploy** bij de nieuwste deployment, zodat de database-instelling actief wordt.
-6. Open `https://<jouw-site>.vercel.app/beheer`, log in met je code en plak de namen van alle collega's.
+1. Log in at [vercel.com](https://vercel.com) with your GitHub account.
+2. Click **Add New → Project** and import `pingpong-ranglijst`.
+3. Under **Environment Variables**, add `ADMIN_CODE` with a secret code of your choice, then click **Deploy**.
+4. In the project, go to **Storage → Create Database → Neon (Postgres)** and connect it to the project. `DATABASE_URL` is then set automatically.
+5. Go to **Deployments** and choose **Redeploy** on the latest deployment so the database setting takes effect.
+6. Open `https://<your-site>.vercel.app/admin`, log in with your code and paste in the names of all your colleagues.
+
+Every push to `main` is deployed automatically.

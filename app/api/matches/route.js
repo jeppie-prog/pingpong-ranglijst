@@ -8,18 +8,18 @@ export async function POST(request) {
   try {
     body = await request.json();
   } catch {
-    return jsonError('Ongeldige aanvraag.');
+    return jsonError('Invalid request.');
   }
   const winnerId = Number(body.winnerId);
   const loserId = Number(body.loserId);
   const special = SPECIALS.includes(body.special) ? body.special : null;
   let declarerId = body.declarerId == null ? null : Number(body.declarerId);
 
-  if (!Number.isInteger(winnerId) || !Number.isInteger(loserId)) return jsonError('Kies twee spelers.');
-  if (winnerId === loserId) return jsonError('Je kunt niet van jezelf winnen.');
-  if (special === null) return jsonError('Onbekende bijzonderheid.');
+  if (!Number.isInteger(winnerId) || !Number.isInteger(loserId)) return jsonError('Pick two players.');
+  if (winnerId === loserId) return jsonError('You cannot beat yourself.');
+  if (special === null) return jsonError('Unknown special outcome.');
   if (special === 'koffie') {
-    if (declarerId !== winnerId && declarerId !== loserId) return jsonError('Kies wie de koffieslaaf-uitdaging riep.');
+    if (declarerId !== winnerId && declarerId !== loserId) return jsonError('Pick who called the coffee slave challenge.');
   } else {
     declarerId = null;
   }
@@ -28,7 +28,7 @@ export async function POST(request) {
     await ready();
     const db = sql();
     const found = await db`SELECT id FROM players WHERE active AND id IN (${winnerId}, ${loserId})`;
-    if (found.length !== 2) return jsonError('Onbekende speler.');
+    if (found.length !== 2) return jsonError('Unknown player.');
     const [row] = await db`
       INSERT INTO matches (winner_id, loser_id, special, declarer_id)
       VALUES (${winnerId}, ${loserId}, ${special}, ${declarerId})
@@ -36,6 +36,6 @@ export async function POST(request) {
     return Response.json({ ...(await getAll()), newId: row.id });
   } catch (e) {
     console.error(e);
-    return jsonError('Opslaan mislukt, probeer het opnieuw.', 500);
+    return jsonError('Saving failed, please try again.', 500);
   }
 }

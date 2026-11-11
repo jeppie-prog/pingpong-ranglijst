@@ -16,9 +16,9 @@ function saveMe(id) {
 
 function parseRoute(hash) {
   const parts = (hash || '').replace(/^#\/?/, '').split('/').filter(Boolean);
-  if (parts[0] === 'invullen') return { view: 'enter' };
-  if (parts[0] === 'uitslagen') return { view: 'results' };
-  if (parts[0] === 'speler' && parts[1]) return { view: 'player', id: Number(parts[1]) };
+  if (parts[0] === 'play') return { view: 'enter' };
+  if (parts[0] === 'results') return { view: 'results' };
+  if (parts[0] === 'player' && parts[1]) return { view: 'player', id: Number(parts[1]) };
   if (parts[0] === 'h2h') return { view: 'h2h', a: Number(parts[1]) || null, b: Number(parts[2]) || null };
   return { view: 'home' };
 }
@@ -35,11 +35,11 @@ function sameDay(a, b) {
 function when(iso) {
   const d = new Date(iso);
   const now = new Date();
-  const time = d.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' });
-  if (sameDay(d, now)) return `vandaag ${time}`;
+  const time = d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+  if (sameDay(d, now)) return `today ${time}`;
   const y = new Date(now); y.setDate(now.getDate() - 1);
-  if (sameDay(d, y)) return `gisteren ${time}`;
-  return d.toLocaleDateString('nl-NL', {
+  if (sameDay(d, y)) return `yesterday ${time}`;
+  return d.toLocaleDateString('en-GB', {
     weekday: 'short', day: 'numeric', month: 'short',
     year: d.getFullYear() === now.getFullYear() ? undefined : 'numeric',
   });
@@ -52,7 +52,7 @@ function initials(name) {
 async function api(path, options) {
   const res = await fetch(path, { cache: 'no-store', ...options });
   const json = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(json.error || 'Er ging iets mis.');
+  if (!res.ok) throw new Error(json.error || 'Something went wrong.');
   return json;
 }
 
@@ -91,7 +91,7 @@ export default function App() {
 
   let body;
   if (!stats) {
-    body = <div className="loading">{loadError ? `⚠️ ${loadError}` : 'Laden…'}</div>;
+    body = <div className="loading">{loadError ? `⚠️ ${loadError}` : 'Loading…'}</div>;
   } else if (route.view === 'enter') {
     body = <Enter data={data} stats={stats} setData={setData} />;
   } else if (route.view === 'results') {
@@ -108,21 +108,21 @@ export default function App() {
     <>
       <header className="topbar">
         <div className="topbar-inner">
-          <h1><button onClick={() => go('/')}>🏓 Pingpong Ranglijst</button></h1>
-          {stats && <span className="sub">{stats.highlights.totalGames} potjes</span>}
+          <h1><button onClick={() => go('/')}>🏓 Ping Pong Ladder</button></h1>
+          {stats && <span className="sub">{stats.highlights.totalGames} games</span>}
         </div>
       </header>
       <main className="shell">{body}</main>
       <nav className="tabbar">
         <div className="tabbar-inner">
           <button className={route.view === 'home' || route.view === 'player' ? 'on' : ''} onClick={() => go('/')}>
-            <span className="ic">🏆</span>Ranglijst
+            <span className="ic">🏆</span>Rankings
           </button>
-          <button className={`plus ${route.view === 'enter' ? 'on' : ''}`} onClick={() => go('/invullen')}>
-            <span className="ic">+</span>Uitslag invullen
+          <button className={`plus ${route.view === 'enter' ? 'on' : ''}`} onClick={() => go('/play')}>
+            <span className="ic">+</span>Add result
           </button>
-          <button className={route.view === 'results' || route.view === 'h2h' ? 'on' : ''} onClick={() => go('/uitslagen')}>
-            <span className="ic">📋</span>Uitslagen
+          <button className={route.view === 'results' || route.view === 'h2h' ? 'on' : ''} onClick={() => go('/results')}>
+            <span className="ic">📋</span>Results
           </button>
         </div>
       </nav>
@@ -136,7 +136,7 @@ function PlayerLink({ stats, id, bold }) {
   const p = stats.byId[id];
   if (!p) return <span>?</span>;
   return (
-    <button className="linkish" style={{ fontWeight: bold ? 700 : 500 }} onClick={() => go(`/speler/${id}`)}>
+    <button className="linkish" style={{ fontWeight: bold ? 700 : 500 }} onClick={() => go(`/player/${id}`)}>
       {p.name}
     </button>
   );
@@ -144,25 +144,25 @@ function PlayerLink({ stats, id, bold }) {
 
 function Form({ form }) {
   return (
-    <span className="form" aria-label="laatste potjes">
+    <span className="form" aria-label="last games">
       {form.map((w, i) => <i key={i} className={`dot ${w ? 'w' : 'l'}`} />)}
     </span>
   );
 }
 
 function Streak({ streak }) {
-  if (streak >= 3) return <span className="streak" title={`${streak} keer op rij gewonnen`}>🔥{streak}</span>;
-  if (streak <= -3) return <span className="streak" title={`${-streak} keer op rij verloren`}>🥶{-streak}</span>;
+  if (streak >= 3) return <span className="streak" title={`${streak} wins in a row`}>🔥{streak}</span>;
+  if (streak <= -3) return <span className="streak" title={`${-streak} losses in a row`}>🥶{-streak}</span>;
   return null;
 }
 
 function specialText(stats, m) {
   const W = stats.byId[m.winnerId]?.name;
   const L = stats.byId[m.loserId]?.name;
-  if (m.special === 'tafel') return `🐢 ${L} moest onder de tafel door (15-0)`;
+  if (m.special === 'tafel') return `🐢 ${L} had to crawl under the table (15-0)`;
   if (m.special === 'koffie') {
-    if (m.declarerId === m.winnerId) return `☕ Comeback van ${W}! ${L} werd koffieslaaf`;
-    return `☕ Bluf van ${L} mislukt: zelf koffieslaaf`;
+    if (m.declarerId === m.winnerId) return `☕ Comeback by ${W}! ${L} became coffee slave`;
+    return `☕ ${L}'s bluff failed: coffee slave themselves`;
   }
   return null;
 }
@@ -173,11 +173,11 @@ function MatchRow({ stats, m }) {
     <div className="match">
       <div>
         <div className="who">
-          <PlayerLink stats={stats} id={m.winnerId} bold /> won van <PlayerLink stats={stats} id={m.loserId} />
+          <PlayerLink stats={stats} id={m.winnerId} bold /> beat <PlayerLink stats={stats} id={m.loserId} />
         </div>
         <div className="when">
           {when(m.playedAt)}
-          {m.upset >= 100 && <> · 😲 stunt</>}
+          {m.upset >= 100 && <> · 😲 upset</>}
         </div>
       </div>
       <div className="delta">±{m.delta}</div>
@@ -196,20 +196,20 @@ function CoffeeBanner({ stats }) {
     <section className="card banner">
       {todaySlaves.length > 0 && (
         <div>
-          <div className="big">☕ Koffieslaaf van vandaag</div>
+          <div className="big">☕ Today's coffee slave</div>
           {todaySlaves.map((m) => (
             <p key={m.id}>
-              <b>{name(m.loserId)}</b> haalt koffie voor <b>{name(m.winnerId)}</b>
-              {m.declarerId === m.loserId ? ' (bluf mislukt)' : ' (na een comeback)'}
+              <b>{name(m.loserId)}</b> fetches coffee for <b>{name(m.winnerId)}</b>
+              {m.declarerId === m.loserId ? ' (bluff failed)' : ' (after a comeback)'}
             </p>
           ))}
         </div>
       )}
       {upcoming.length > 0 && (
         <div style={{ marginTop: todaySlaves.length ? 10 : 0 }}>
-          <div className="big">☕ Volgende werkdag koffieslaaf</div>
+          <div className="big">☕ Coffee slave next working day</div>
           {upcoming.map((m) => (
-            <p key={m.id}><b>{name(m.loserId)}</b> haalt koffie voor <b>{name(m.winnerId)}</b></p>
+            <p key={m.id}><b>{name(m.loserId)}</b> fetches coffee for <b>{name(m.winnerId)}</b></p>
           ))}
         </div>
       )}
@@ -225,21 +225,21 @@ function Home({ stats }) {
       <CoffeeBanner stats={stats} />
 
       <section className="card">
-        <h2>Ranglijst</h2>
+        <h2>Rankings</h2>
         {ranked.length === 0 ? (
           <div className="empty">
-            Nog geen potjes gespeeld.<br />
-            <button className="primary" onClick={() => go('/invullen')}>Vul de eerste uitslag in</button>
+            No games played yet.<br />
+            <button className="primary" onClick={() => go('/play')}>Add the first result</button>
           </div>
         ) : (
           <ol className="rank-list">
             {ranked.map((p) => (
-              <li key={p.id} className="rank-item" onClick={() => go(`/speler/${p.id}`)}>
+              <li key={p.id} className="rank-item" onClick={() => go(`/player/${p.id}`)}>
                 <span className={`pos ${p.rank <= 3 ? `p${p.rank}` : ''}`}>{p.rank}</span>
                 <div>
                   <div className="pname">{p.name} <Streak streak={p.streak} /></div>
                   <div className="pmeta">
-                    <span>{p.wins}W · {p.losses}V</span>
+                    <span>{p.wins}W · {p.losses}L</span>
                     <Form form={p.form} />
                   </div>
                 </div>
@@ -252,31 +252,31 @@ function Home({ stats }) {
 
       {highlights.totalGames > 0 && (
         <section className="card">
-          <h2>Hoogtepunten</h2>
+          <h2>Highlights</h2>
           <div className="hl-grid">
             {highlights.currentHot && (
               <div className="hl">
-                <div className="lbl">🔥 Is on fire</div>
-                <div className="val">{highlights.currentHot.name}: {highlights.currentHot.streak} op rij</div>
+                <div className="lbl">🔥 On fire</div>
+                <div className="val">{highlights.currentHot.name}: {highlights.currentHot.streak} in a row</div>
               </div>
             )}
             {highlights.longestStreak && (
               <div className="hl">
-                <div className="lbl">🏅 Langste winstreeks ooit</div>
+                <div className="lbl">🏅 Longest win streak ever</div>
                 <div className="val">{highlights.longestStreak.name}: {highlights.longestStreak.bestWinStreak}</div>
               </div>
             )}
             {upset && (
               <div className="hl">
-                <div className="lbl">😲 Grootste stunt</div>
+                <div className="lbl">😲 Biggest upset</div>
                 <div className="val">
-                  {stats.byId[upset.match.winnerId].name} won van {stats.byId[upset.match.loserId].name}
+                  {stats.byId[upset.match.winnerId].name} beat {stats.byId[upset.match.loserId].name}
                 </div>
-                <div className="small muted">{upset.diff} punten lager · {when(upset.match.playedAt)}</div>
+                <div className="small muted">{upset.diff} points lower · {when(upset.match.playedAt)}</div>
               </div>
             )}
             <div className="hl">
-              <div className="lbl">🏓 Potjes gespeeld</div>
+              <div className="lbl">🏓 Games played</div>
               <div className="val">{highlights.totalGames}</div>
             </div>
           </div>
@@ -285,7 +285,7 @@ function Home({ stats }) {
 
       {unranked.length > 0 && (
         <section className="card">
-          <h3>Nog niet gespeeld <span className="muted small">(start op {START_RATING})</span></h3>
+          <h3>Not played yet <span className="muted small">(starting at {START_RATING})</span></h3>
           <div className="chips-inline">
             {unranked.map((p) => <span key={p.id} className="tag">{p.name}</span>)}
           </div>
@@ -304,14 +304,14 @@ function NamePicker({ players, exclude, onPick, title }) {
     <div>
       <p className="step-title">{title}</p>
       {players.length > 12 && (
-        <input className="search" placeholder="Zoek een naam…" value={q} onChange={(e) => setQ(e.target.value)} />
+        <input className="search" placeholder="Search a name…" value={q} onChange={(e) => setQ(e.target.value)} />
       )}
       <div className="name-grid">
         {list.map((p) => (
           <button key={p.id} className="name-btn" onClick={() => onPick(p.id)}>{p.name}</button>
         ))}
       </div>
-      {list.length === 0 && <div className="empty small">Geen spelers gevonden.</div>}
+      {list.length === 0 && <div className="empty small">No players found.</div>}
     </div>
   );
 }
@@ -339,7 +339,7 @@ function Enter({ data, stats, setData }) {
   if (players.length < 2) {
     return (
       <section className="card empty">
-        Er zijn nog geen spelers. De beheerder kan ze toevoegen via <a href="/beheer">/beheer</a>.
+        There are no players yet. The admin can add them at <a href="/admin">/admin</a>.
       </section>
     );
   }
@@ -374,14 +374,14 @@ function Enter({ data, stats, setData }) {
       <section className="card">
         {me ? (
           <>
-            <p className="step-title">Jij bent</p>
+            <p className="step-title">You are</p>
             <div className="picked">
               <span className="nm">{name(me)}</span>
-              <button className="btn-text" onClick={() => { setMe(null); reset(); }}>Wijzig</button>
+              <button className="btn-text" onClick={() => { setMe(null); reset(); }}>Change</button>
             </div>
           </>
         ) : (
-          <NamePicker players={players} title="Wie ben jij?" onPick={(id) => { setMe(id); saveMe(id); }} />
+          <NamePicker players={players} title="Who are you?" onPick={(id) => { setMe(id); saveMe(id); }} />
         )}
       </section>
 
@@ -389,24 +389,24 @@ function Enter({ data, stats, setData }) {
         <section className="card">
           {opp ? (
             <>
-              <p className="step-title">Tegenstander</p>
+              <p className="step-title">Opponent</p>
               <div className="picked">
                 <span className="nm">{name(opp)}</span>
-                <button className="btn-text" onClick={reset}>Wijzig</button>
+                <button className="btn-text" onClick={reset}>Change</button>
               </div>
             </>
           ) : (
-            <NamePicker players={players} exclude={me} title="Tegen wie speelde je?" onPick={setOpp} />
+            <NamePicker players={players} exclude={me} title="Who did you play against?" onPick={setOpp} />
           )}
         </section>
       )}
 
       {me && opp && (
         <section className="card">
-          <p className="step-title">Wie won?</p>
+          <p className="step-title">Who won?</p>
           <div className="big-choice">
             <button className={`big-btn ${winner === me ? 'on' : ''}`} onClick={() => setWinner(me)}>
-              <span className="em">💪</span>Ik won
+              <span className="em">💪</span>I won
             </button>
             <button className={`big-btn ${winner === opp ? 'on' : ''}`} onClick={() => setWinner(opp)}>
               <span className="em">🙃</span>{name(opp)} won
@@ -417,50 +417,50 @@ function Enter({ data, stats, setData }) {
 
       {winner && (
         <section className="card">
-          <p className="step-title">Iets bijzonders?</p>
+          <p className="step-title">Anything special?</p>
           <div className="opt-list">
             <button className={`opt ${special === '' ? 'on' : ''}`} onClick={() => { setSpecial(''); setDeclarer(null); }}>
               <span className="em">🏓</span>
-              <span><div className="t">Gewoon gewonnen</div></span>
+              <span><div className="t">Regular win</div></span>
             </button>
             <button className={`opt ${special === 'tafel' ? 'on' : ''}`} onClick={() => { setSpecial('tafel'); setDeclarer(null); }}>
               <span className="em">🐢</span>
               <span>
-                <div className="t">Onder de tafel door</div>
-                <div className="d">Gewonnen met 15-0, {name(loser)} moet onder de tafel door kruipen</div>
+                <div className="t">Under the table</div>
+                <div className="d">Won 15-0, {name(loser)} has to crawl under the table</div>
               </span>
             </button>
             <button className={`opt ${special === 'koffie' ? 'on' : ''}`} onClick={() => setSpecial('koffie')}>
               <span className="em">☕</span>
               <span>
-                <div className="t">Koffieslaaf-uitdaging</div>
-                <div className="d">Iemand stond 0-2 achter en riep dat hij nog ging winnen</div>
+                <div className="t">Coffee slave challenge</div>
+                <div className="d">Someone was 0-2 down in sets and called that they would still win</div>
               </span>
             </button>
           </div>
 
           {special === 'koffie' && (
             <>
-              <p className="step-title" style={{ marginTop: 16 }}>Wie stond 0-2 achter en riep het?</p>
+              <p className="step-title" style={{ marginTop: 16 }}>Who was 0-2 down and made the call?</p>
               <div className="big-choice">
                 {[me, opp].map((id) => (
                   <button key={id} className={`big-btn ${declarer === id ? 'on' : ''}`} onClick={() => setDeclarer(id)}>
-                    {id === me ? 'Ik' : name(id)}
+                    {id === me ? 'Me' : name(id)}
                   </button>
                 ))}
               </div>
               {declarer && (
                 <div className="note">
                   {declarer === winner
-                    ? `Comeback gelukt! ${name(loser)} is de volgende werkdag koffieslaaf van ${name(winner)}.`
-                    : `Bluf mislukt! ${name(loser)} is de volgende werkdag zelf koffieslaaf van ${name(winner)}.`}
+                    ? `Comeback! ${name(loser)} is ${name(winner)}'s coffee slave next working day.`
+                    : `Bluff failed! ${name(loser)} is ${name(winner)}'s coffee slave next working day.`}
                 </div>
               )}
             </>
           )}
 
           <button className="primary" disabled={!canSave || busy} onClick={submit}>
-            {busy ? 'Opslaan…' : `Opslaan: ${name(winner)} wint`}
+            {busy ? 'Saving…' : `Save: ${name(winner)} wins`}
           </button>
           {error && <div className="error">{error}</div>}
         </section>
@@ -492,8 +492,8 @@ function Saved({ stats, saved, setData, onAgain }) {
     return (
       <section className="card success">
         <div className="em">↩️</div>
-        <h2>Uitslag ongedaan gemaakt</h2>
-        <button className="primary" onClick={onAgain}>Opnieuw invullen</button>
+        <h2>Result undone</h2>
+        <button className="primary" onClick={onAgain}>Enter again</button>
       </section>
     );
   }
@@ -501,9 +501,9 @@ function Saved({ stats, saved, setData, onAgain }) {
   return (
     <section className="card success">
       <div className="em">{saved.special === 'tafel' ? '🐢' : saved.special === 'koffie' ? '☕' : '🎉'}</div>
-      <h2>{name(saved.winner)} wint van {name(saved.loser)}!</h2>
-      {saved.special === 'tafel' && <p>{name(saved.loser)}, onder de tafel door! 🐢</p>}
-      {saved.special === 'koffie' && <p>{name(saved.loser)} is de volgende werkdag koffieslaaf ☕</p>}
+      <h2>{name(saved.winner)} beats {name(saved.loser)}!</h2>
+      {saved.special === 'tafel' && <p>{name(saved.loser)}, under the table you go! 🐢</p>}
+      {saved.special === 'koffie' && <p>{name(saved.loser)} is coffee slave next working day ☕</p>}
       <div className="deltas">
         <div>
           <div className="small muted">{name(saved.winner)}</div>
@@ -514,10 +514,10 @@ function Saved({ stats, saved, setData, onAgain }) {
           <div><span className="down">−{saved.delta}</span> → {saved.lR - saved.delta}</div>
         </div>
       </div>
-      <button className="primary" onClick={() => go('/')}>Naar de ranglijst</button>
-      <button className="secondary" onClick={onAgain}>Nog een potje invullen</button>
+      <button className="primary" onClick={() => go('/')}>Go to rankings</button>
+      <button className="secondary" onClick={onAgain}>Add another game</button>
       <button className="secondary" disabled={undoing} onClick={undo}>
-        {undoing ? 'Bezig…' : 'Foutje? Ongedaan maken'}
+        {undoing ? 'Working…' : 'Mistake? Undo'}
       </button>
       {error && <div className="error">{error}</div>}
     </section>
@@ -533,16 +533,16 @@ function Results({ stats }) {
     <>
       <section className="card">
         <div className="row">
-          <h2 style={{ margin: 0 }}>Uitslagen</h2>
+          <h2 style={{ margin: 0 }}>Results</h2>
           <span className="spacer" />
           <button className="btn-text" onClick={() => go('/h2h')}>⚔️ Head-to-head</button>
         </div>
         <div style={{ marginTop: 8 }}>
-          {list.length === 0 && <div className="empty">Nog geen uitslagen.</div>}
+          {list.length === 0 && <div className="empty">No results yet.</div>}
           {list.map((m) => <MatchRow key={m.id} stats={stats} m={m} />)}
         </div>
         {stats.matches.length > limit && (
-          <button className="secondary" onClick={() => setLimit(limit + 50)}>Meer laden</button>
+          <button className="secondary" onClick={() => setLimit(limit + 50)}>Load more</button>
         )}
       </section>
     </>
@@ -565,7 +565,7 @@ function RatingChart({ history }) {
   const line = points.map((p, i) => `${x(i).toFixed(1)},${y(p.r).toFixed(1)}`).join(' ');
   const area = `${x(0)},${H - P.b} ${line} ${x(points.length - 1)},${H - P.b}`;
   return (
-    <svg className="chart" viewBox={`0 0 ${W} ${H}`} role="img" aria-label="Rating door de tijd">
+    <svg className="chart" viewBox={`0 0 ${W} ${H}`} role="img" aria-label="Rating over time">
       <line className="grid" x1={P.l} x2={W - P.r} y1={y(max)} y2={y(max)} />
       <line className="grid" x1={P.l} x2={W - P.r} y1={y(min)} y2={y(min)} />
       <line className="base" x1={P.l} x2={W - P.r} y1={y(START_RATING)} y2={y(START_RATING)} />
@@ -575,14 +575,14 @@ function RatingChart({ history }) {
       <polygon className="area" points={area} />
       <polyline className="ln" points={line} />
       <text x={P.l} y={H - 4}>start</text>
-      <text x={W - P.r} y={H - 4} textAnchor="end">nu</text>
+      <text x={W - P.r} y={H - 4} textAnchor="end">now</text>
     </svg>
   );
 }
 
 function Profile({ stats, id }) {
   const p = stats.byId[id];
-  if (!p) return <section className="card empty">Speler niet gevonden.</section>;
+  if (!p) return <section className="card empty">Player not found.</section>;
 
   const winPct = p.games ? Math.round((p.wins / p.games) * 100) : 0;
   const opponents = Object.entries(p.h2h)
@@ -593,47 +593,47 @@ function Profile({ stats, id }) {
 
   return (
     <>
-      <button className="back" onClick={() => history.length > 1 ? history.back() : go('/')}>← Terug</button>
+      <button className="back" onClick={() => history.length > 1 ? history.back() : go('/')}>← Back</button>
       <section className="card">
         <div className="profile-head">
           <div className="avatar">{initials(p.name)}</div>
           <div>
             <h2>{p.name}</h2>
             <div className="muted">
-              {p.rank ? `#${p.rank} van ${stats.ranked.length}` : 'Nog niet gespeeld'} · rating <b>{p.rating}</b>
+              {p.rank ? `#${p.rank} of ${stats.ranked.length}` : 'Not played yet'} · rating <b>{p.rating}</b>
             </div>
           </div>
         </div>
         <div className="stat-grid">
-          <div className="stat"><div className="v">{p.wins}–{p.losses}</div><div className="k">winst–verlies</div></div>
-          <div className="stat"><div className="v">{winPct}%</div><div className="k">gewonnen</div></div>
-          <div className="stat"><div className="v">{p.peak}</div><div className="k">hoogste rating</div></div>
+          <div className="stat"><div className="v">{p.wins}–{p.losses}</div><div className="k">won–lost</div></div>
+          <div className="stat"><div className="v">{winPct}%</div><div className="k">win rate</div></div>
+          <div className="stat"><div className="v">{p.peak}</div><div className="k">peak rating</div></div>
           <div className="stat">
             <div className="v">{p.streak > 0 ? `🔥${p.streak}` : p.streak < 0 ? `${-p.streak}` : '–'}</div>
-            <div className="k">{p.streak < 0 ? 'verloren op rij' : 'gewonnen op rij'}</div>
+            <div className="k">{p.streak < 0 ? 'losses in a row' : 'wins in a row'}</div>
           </div>
-          <div className="stat"><div className="v">{p.bestWinStreak}</div><div className="k">langste winstreeks</div></div>
-          <div className="stat"><div className="v">{p.games}</div><div className="k">potjes</div></div>
+          <div className="stat"><div className="v">{p.bestWinStreak}</div><div className="k">longest win streak</div></div>
+          <div className="stat"><div className="v">{p.games}</div><div className="k">games</div></div>
         </div>
       </section>
 
       {p.games > 0 && (
         <section className="card">
-          <h3>Rating door de tijd</h3>
+          <h3>Rating over time</h3>
           <RatingChart history={p.history} />
         </section>
       )}
 
       {p.games > 0 && (
         <section className="card">
-          <h3>Weetjes</h3>
+          <h3>Fun facts</h3>
           <div className="facts">
-            {p.rival && <div className="fact"><span className="em">⚔️</span><span>Aartsrivaal: <b>{nm(p.rival.id)}</b> ({p.rival.total} potjes, {p.rival.w}–{p.rival.l})</span></div>}
-            {p.nemesis && <div className="fact"><span className="em">😈</span><span>Nemesis: <b>{nm(p.nemesis.id)}</b> (verloren {p.nemesis.l}×, gewonnen {p.nemesis.w}×)</span></div>}
-            {p.prey && <div className="fact"><span className="em">🎯</span><span>Favoriete tegenstander: <b>{nm(p.prey.id)}</b> ({p.prey.w}–{p.prey.l})</span></div>}
-            {p.bestUpset && <div className="fact"><span className="em">😲</span><span>Grootste stunt: won van <b>{nm(p.bestUpset.match.loserId)}</b> met {p.bestUpset.diff} punten minder</span></div>}
-            {(p.tafelGiven > 0 || p.tafelTaken > 0) && <div className="fact"><span className="em">🐢</span><span>Iemand onder de tafel gestuurd: {p.tafelGiven}× · zelf gekropen: {p.tafelTaken}×</span></div>}
-            {(p.koffieSlaaf > 0 || p.comebacks > 0) && <div className="fact"><span className="em">☕</span><span>Koffieslaaf geweest: {p.koffieSlaaf}× · geslaagde comebacks: {p.comebacks}× · mislukte bluf: {p.bluffs}×</span></div>}
+            {p.rival && <div className="fact"><span className="em">⚔️</span><span>Arch rival: <b>{nm(p.rival.id)}</b> ({p.rival.total} games, {p.rival.w}–{p.rival.l})</span></div>}
+            {p.nemesis && <div className="fact"><span className="em">😈</span><span>Nemesis: <b>{nm(p.nemesis.id)}</b> (lost {p.nemesis.l}×, won {p.nemesis.w}×)</span></div>}
+            {p.prey && <div className="fact"><span className="em">🎯</span><span>Favourite opponent: <b>{nm(p.prey.id)}</b> ({p.prey.w}–{p.prey.l})</span></div>}
+            {p.bestUpset && <div className="fact"><span className="em">😲</span><span>Biggest upset: beat <b>{nm(p.bestUpset.match.loserId)}</b> while {p.bestUpset.diff} points lower</span></div>}
+            {(p.tafelGiven > 0 || p.tafelTaken > 0) && <div className="fact"><span className="em">🐢</span><span>Sent someone under the table: {p.tafelGiven}× · crawled under: {p.tafelTaken}×</span></div>}
+            {(p.koffieSlaaf > 0 || p.comebacks > 0) && <div className="fact"><span className="em">☕</span><span>Coffee slave: {p.koffieSlaaf}× · successful comebacks: {p.comebacks}× · failed bluffs: {p.bluffs}×</span></div>}
           </div>
         </section>
       )}
@@ -659,7 +659,7 @@ function Profile({ stats, id }) {
 
       {recent.length > 0 && (
         <section className="card">
-          <h3>Laatste potjes</h3>
+          <h3>Recent games</h3>
           {recent.map((m) => <MatchRow key={m.id} stats={stats} m={m} />)}
         </section>
       )}
@@ -682,12 +682,12 @@ function HeadToHead({ stats, a, b }) {
         <h2>⚔️ Head-to-head</h2>
         <div className="vs" style={{ marginBottom: 12 }}>
           <select className="select" value={a || ''} onChange={(e) => setPair(e.target.value, b)}>
-            <option value="">Kies speler</option>
+            <option value="">Pick a player</option>
             {all.map((p) => <option key={p.id} value={p.id} disabled={p.id === b}>{p.name}</option>)}
           </select>
           <span className="muted">vs</span>
           <select className="select" value={b || ''} onChange={(e) => setPair(a, e.target.value)}>
-            <option value="">Kies speler</option>
+            <option value="">Pick a player</option>
             {all.map((p) => <option key={p.id} value={p.id} disabled={p.id === a}>{p.name}</option>)}
           </select>
         </div>
@@ -700,7 +700,7 @@ function HeadToHead({ stats, a, b }) {
             </div>
             {h.matches.length > 0 && (
               <p className="center small muted">
-                Kans dat {A.name} het volgende potje wint: {Math.round(100 / (1 + Math.pow(10, (B.rating - A.rating) / 400)))}%
+                Chance {A.name} wins the next game: {Math.round(100 / (1 + Math.pow(10, (B.rating - A.rating) / 400)))}%
               </p>
             )}
           </>
@@ -708,8 +708,8 @@ function HeadToHead({ stats, a, b }) {
       </section>
       {h && (
         <section className="card">
-          <h3>Onderlinge potjes</h3>
-          {h.matches.length === 0 && <div className="empty">Deze twee hebben nog nooit tegen elkaar gespeeld.</div>}
+          <h3>Games between them</h3>
+          {h.matches.length === 0 && <div className="empty">These two have never played each other.</div>}
           {h.matches.map((m) => <MatchRow key={m.id} stats={stats} m={m} />)}
         </section>
       )}

@@ -11,7 +11,7 @@ async function call(path, code, options = {}) {
     headers: { 'Content-Type': 'application/json', 'x-admin-code': code, ...(options.headers || {}) },
   });
   const json = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(json.error || 'Er ging iets mis.');
+  if (!res.ok) throw new Error(json.error || 'Something went wrong.');
   return json;
 }
 
@@ -61,14 +61,14 @@ export default function Admin() {
     return (
       <main className="shell">
         <section className="card" style={{ marginTop: 40 }}>
-          <h2>🔒 Beheer</h2>
+          <h2>🔒 Admin</h2>
           <form onSubmit={(e) => { e.preventDefault(); login(code); }}>
-            <input className="search" type="password" placeholder="Beheerderscode" value={code}
+            <input className="search" type="password" placeholder="Admin code" value={code}
               onChange={(e) => setCode(e.target.value)} autoFocus />
-            <button className="primary" type="submit">Inloggen</button>
+            <button className="primary" type="submit">Log in</button>
           </form>
           {error && <div className="error">{error}</div>}
-          <p className="small muted"><a href="/">← Terug naar de ranglijst</a></p>
+          <p className="small muted"><a href="/">← Back to rankings</a></p>
         </section>
       </main>
     );
@@ -78,12 +78,12 @@ export default function Admin() {
 
   return (
     <main className="shell">
-      <p><a href="/">← Terug naar de ranglijst</a></p>
+      <p><a href="/">← Back to rankings</a></p>
       {(msg || error) && <div className={error ? 'error' : 'small'} style={{ color: error ? undefined : 'var(--win)' }}>{error || msg}</div>}
 
       <section className="card">
-        <h2>Spelers toevoegen</h2>
-        <p className="small muted">Eén naam per regel. Je kunt hier in één keer de hele lijst plakken.</p>
+        <h2>Add players</h2>
+        <p className="small muted">One name per line. You can paste the whole list at once.</p>
         <textarea value={newNames} onChange={(e) => setNewNames(e.target.value)} placeholder={'Jep\nDimitri\nSanne'} />
         <button className="primary" disabled={!newNames.trim()} onClick={() =>
           run(async () => {
@@ -93,36 +93,36 @@ export default function Admin() {
             });
             setNewNames('');
             return res;
-          }, 'Spelers toegevoegd.')
-        }>Toevoegen</button>
+          }, 'Players added.')
+        }>Add</button>
       </section>
 
       <section className="card">
-        <h2>Spelers ({data?.players.length || 0})</h2>
-        <p className="small muted">Een inactieve speler verdwijnt uit de ranglijst en de invullijst, maar zijn oude potjes blijven meetellen.</p>
+        <h2>Players ({data?.players.length || 0})</h2>
+        <p className="small muted">An inactive player disappears from the rankings and the player picker, but their past games still count.</p>
         {data?.players.map((p) => <PlayerRow key={`${p.id}-${p.name}`} p={p} onSave={(body, okMsg) =>
           run(() => call('/api/players', code, { method: 'PATCH', body: JSON.stringify({ id: p.id, ...body }) }), okMsg)
         } />)}
       </section>
 
       <section className="card">
-        <h2>Uitslagen verwijderen</h2>
-        <p className="small muted">Nieuwste eerst. Een verwijderde uitslag is echt weg, en alle ratings worden opnieuw berekend.</p>
+        <h2>Delete results</h2>
+        <p className="small muted">Newest first. A deleted result is gone for good, and all ratings are recalculated.</p>
         {data && [...data.matches].reverse().slice(0, 100).map((m) => (
           <div key={m.id} className="admin-row">
             <span style={{ flex: 1 }}>
-              <b>{names[m.winnerId]}</b> won van {names[m.loserId]}
+              <b>{names[m.winnerId]}</b> beat {names[m.loserId]}
               {m.special === 'tafel' && ' 🐢'}{m.special === 'koffie' && ' ☕'}
-              <div className="small muted">{new Date(m.playedAt).toLocaleString('nl-NL')}</div>
+              <div className="small muted">{new Date(m.playedAt).toLocaleString('en-GB')}</div>
             </span>
             <button className="btn-danger" onClick={() => {
-              if (confirm(`Uitslag ${names[m.winnerId]} – ${names[m.loserId]} verwijderen?`)) {
-                run(() => call(`/api/matches/${m.id}`, code, { method: 'DELETE' }), 'Uitslag verwijderd.');
+              if (confirm(`Delete result ${names[m.winnerId]} – ${names[m.loserId]}?`)) {
+                run(() => call(`/api/matches/${m.id}`, code, { method: 'DELETE' }), 'Result deleted.');
               }
-            }}>Verwijderen</button>
+            }}>Delete</button>
           </div>
         ))}
-        {data && data.matches.length === 0 && <div className="empty">Nog geen uitslagen.</div>}
+        {data && data.matches.length === 0 && <div className="empty">No results yet.</div>}
       </section>
     </main>
   );
@@ -134,10 +134,10 @@ function PlayerRow({ p, onSave }) {
     <div className="admin-row" style={{ opacity: p.active ? 1 : 0.55 }}>
       <input type="text" value={name} onChange={(e) => setName(e.target.value)} />
       {name.trim() !== p.name && (
-        <button onClick={() => onSave({ name }, 'Naam aangepast.')}>Opslaan</button>
+        <button onClick={() => onSave({ name }, 'Name updated.')}>Save</button>
       )}
-      <button onClick={() => onSave({ active: !p.active }, p.active ? 'Speler op inactief gezet.' : 'Speler weer actief.')}>
-        {p.active ? 'Inactief maken' : 'Activeren'}
+      <button onClick={() => onSave({ active: !p.active }, p.active ? 'Player set to inactive.' : 'Player active again.')}>
+        {p.active ? 'Make inactive' : 'Activate'}
       </button>
     </div>
   );
