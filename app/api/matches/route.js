@@ -2,7 +2,7 @@ import { getAll, jsonError, ready, sql } from '@/lib/db';
 
 const SPECIALS = ['', 'tafel', 'koffie'];
 
-// Nieuwe uitslag invullen (iedereen mag dit).
+// Add a new result (anyone may do this).
 export async function POST(request) {
   let body;
   try {

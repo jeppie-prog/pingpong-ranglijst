@@ -49,7 +49,7 @@ test('special outcomes', () => {
 });
 
 test('coffee slave is due the next working day', () => {
-  // vrijdag 6 nov -> maandag 9 nov
+  // Friday 6 Nov -> Monday 9 Nov
   assert.equal(nextWorkday(new Date(2026, 10, 6)).getDate(), 9);
   const fri = { ...m(1, 6, 1, 2, 'koffie', 1), playedAt: new Date(2026, 10, 6, 13).toISOString() };
   const s = compute(players, [fri]);

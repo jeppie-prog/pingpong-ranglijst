@@ -3,7 +3,7 @@ import { getAll, isAdmin, jsonError, ready, sql } from '@/lib/db';
 const UNDO_MINUTES = 15;
 const UUID = /^[0-9a-f-]{36}$/i;
 
-// Uitslag verwijderen: iedereen binnen 15 minuten (ongedaan maken), beheerder altijd.
+// Delete a result: anyone within 15 minutes (undo), the admin always.
 export async function DELETE(request, { params }) {
   const { id } = await params;
   if (!UUID.test(id)) return jsonError('Unknown result.', 404);

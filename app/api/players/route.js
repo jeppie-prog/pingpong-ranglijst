@@ -4,7 +4,7 @@ function cleanName(n) {
   return String(n || '').replace(/\s+/g, ' ').trim().slice(0, 40);
 }
 
-// Beheer: spelers toevoegen (één of meer namen).
+// Admin: add players (one or more names).
 export async function POST(request) {
   if (!isAdmin(request)) return jsonError('Wrong admin code.', 401);
   const body = await request.json().catch(() => ({}));
@@ -23,7 +23,7 @@ export async function POST(request) {
   }
 }
 
-// Beheer: speler hernoemen of (de)activeren.
+// Admin: rename or (de)activate a player.
 export async function PATCH(request) {
   if (!isAdmin(request)) return jsonError('Wrong admin code.', 401);
   const body = await request.json().catch(() => ({}));
